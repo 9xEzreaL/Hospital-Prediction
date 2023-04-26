@@ -11,17 +11,12 @@ import torch.utils.data as data
 from utils.Metrics import Metric
 from utils.helpers import Progressbar, add_scalar_dict
 from tensorboardX import SummaryWriter
-from torchsampler import ImbalancedDatasetSampler
 import torch.optim as optim
 from utils.configurations import root, meta_csv, save_to
 
 from model.RNN import RNN
-from model.simple_dnn import Net
-
-"""
-Train a classfier model and save it so that you can use this classfier to test your generated data.
-"""
-
+from model.simple_dnn import DNN
+from model.transformer import TF
 
 def parse(args=None):
     parser = argparse.ArgumentParser()
@@ -33,8 +28,11 @@ def parse(args=None):
     parser.add_argument('--multi_gpu', dest='multi_gpu', action='store_true')
     parser.add_argument('--exp', dest='experiment_name',
                         default=datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"))
-    parser.add_argument('--num_classes', dest='num_classes', type=int, default=2)
-    parser.add_argument('--num_features', dest='num_features', type=int, default=15)
+    parser.add_argument('--features', dest='features', type=list, default=['age_65', 'Emergency', 'hypertension', 'DM',
+                                                                           'hyperlipidemia', 'CKD', 'chronic_hepatitis',
+                                                                            'COPD_asthma', 'gout_hyperua', 'heart_disease',
+                                                                           'CVD', 'ulcers', 'Cancer_metastatic', 'freq', 'appl_dot_sum'])
+    parser.add_argument('--classes', dest='classes', type=list, default=['freq', 'spend_16']) # Objectiive
     return parser.parse_args(args)
 
 
@@ -42,7 +40,7 @@ class Classifier:
     def __init__(self, args, net):
         self.args = args
         self.multi_gpu = args.multi_gpu if 'multi_gpu' in args else False
-        self.model = self.network_map(net)(args.num_features)
+        self.model = self.network_map(net)(len(args.features))
         self.model.train()
         self.model.cuda()
 
@@ -78,7 +76,7 @@ class Classifier:
 
         errD = {
             'freq_loss': loss_freq.mean().item(),
-            # 'money_loss': loss_money.mean().item()
+            'money_loss': loss_money.mean().item()
         }
         self.it += 1
         return errD, acc
@@ -122,7 +120,8 @@ class Classifier:
     def network_map(self, net):
         network_mapping = {
             'rnn' : RNN,
-            'dnn' : Net
+            'dnn' : DNN,
+            'attn' : TF,
         }
         return network_mapping[net]
 
@@ -146,11 +145,11 @@ if __name__ == '__main__':
 
     from data.dataloader import VanillaDataset
 
-    train_dataset = VanillaDataset(root, meta_csv, mode='train')
+    train_dataset = VanillaDataset(root, meta_csv, mode='train', features=args.features)
     train_dataloader = data.DataLoader(dataset=train_dataset, batch_size=args.batch_size_per_gpu * num_gpu,
                                        num_workers=10, drop_last=True, shuffle=True)
 
-    eval_dataset = VanillaDataset(root, meta_csv, mode='eval')
+    eval_dataset = VanillaDataset(root, meta_csv, mode='eval', features=args.features)
     eval_dataloader = data.DataLoader(dataset=eval_dataset, batch_size=args.batch_size_per_gpu * num_gpu,
                                       num_workers=10, drop_last=True, shuffle=False)
 
@@ -164,8 +163,8 @@ if __name__ == '__main__':
         classifier.set_lr(lr)
         classifier.train()
         writer.add_scalar('LR/learning_rate', lr, it + 1)
-        metric_tr = Metric(num_classes=args.num_classes)
-        metric_ev = Metric(num_classes=args.num_classes)
+        metric_tr = Metric(num_classes=len(args.classes))
+        metric_ev = Metric(num_classes=len(args.classes))
         for img, label, id in progressbar(train_dataloader):
             img = img.cuda()
             label = label.cuda()

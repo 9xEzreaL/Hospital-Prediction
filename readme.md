@@ -58,3 +58,6 @@ Acc definition:
 - RNN model :
   - frequency acc: 
   - cost acc: 
+- Attention model :
+  - frequency acc: 0.8
+  - cost acc: 0.23

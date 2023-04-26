@@ -19,6 +19,7 @@ class VanillaDataset(Dataset):
                  mode,
                  features=['age_65', 'Emergency', 'hypertension', 'DM', 'hyperlipidemia', 'CKD', 'chronic_hepatitis',
                            'COPD_asthma', 'gout_hyperua', 'heart_disease', 'CVD', 'ulcers', 'Cancer_metastatic', 'freq', 'appl_dot_sum'],
+                 objective=['freq', 'spend_16']
                  ):
 
         meta_info = pd.read_csv(os.path.join(root, meta_csv))
@@ -28,23 +29,11 @@ class VanillaDataset(Dataset):
             self.meta_info = pd.concat([meta_info.loc[:700], meta_info.loc[6800:]], 0)
 
         self.features = features
+        self.objective = objective
         self.mode = mode
 
     def __getitem__(self, index):
         id = self.meta_info.iloc[index]['id']
-        # age = self.meta_info.iloc[index]['age_65']
-        # emergency = self.meta_info.iloc[index]['Emergency']
-        # hypertension = self.meta_info.iloc[index]['hypertension']
-        # DM = self.meta_info.iloc[index]['DM']
-        # hyperlipidemia = self.meta_info.iloc[index]['hyperlipidemia']
-        # CKD = self.meta_info.iloc[index]['CKD']
-        # chronic_hepatitis = self.meta_info.iloc[index]['chronic_hepatitis']
-        # COPD_asthma = self.meta_info.iloc[index]['COPD_asthma']
-        # gout_hyperua = self.meta_info.iloc[index]['gout_hyperua']
-        # heart_disease = self.meta_info.iloc[index]['heart_disease']
-        # CVD = self.meta_info.iloc[index]['CVD']
-        # ulcers = self.meta_info.iloc[index]['ulcers']
-        # cancer_etastatic = self.meta_info.iloc[index]['Cancer_metastatic']
 
         feature_list = [self.meta_info.iloc[index][i] for i in self.features]
         features = torch.Tensor(feature_list).unsqueeze(0)
@@ -54,8 +43,6 @@ class VanillaDataset(Dataset):
         # spend_last = math.log(1+int(self.meta_info.iloc[index]['appl_dot_sum']))
 
 
-        # features = torch.Tensor([age, emergency, hypertension, DM, hyperlipidemia, CKD, chronic_hepatitis, COPD_asthma,
-        #                          gout_hyperua, heart_disease, CVD, ulcers, cancer_etastatic, freq_last, spend_last]).unsqueeze(0)
         # features = torch.Tensor([freq_last, spend_last]).unsqueeze(0)
         # features = torch.Tensor([spend_last]).unsqueeze(0)
 
