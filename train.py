@@ -6,10 +6,9 @@ import argparse
 import datetime
 import json
 from os.path import join
-import numpy as np
 import torch.utils.data as data
 from utils.Metrics import Metric
-from utils.helpers import Progressbar, add_scalar_dict
+from utils.helpers import Progressbar
 from tensorboardX import SummaryWriter
 import torch.optim as optim
 from utils.configurations import root, meta_csv, save_to
@@ -20,7 +19,6 @@ from model.transformer import TF
 
 def parse(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--img_size', dest='img_size', type=int, default=256)
     parser.add_argument('--epochs', dest='epochs', type=int, default=100, help='# of epochs')
     parser.add_argument('--bs_per_gpu', dest='batch_size_per_gpu', type=int, default=20)  # training batch size
     parser.add_argument('--lr', dest='lr', type=float, default=0.02, help='learning rate')
