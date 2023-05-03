@@ -21,17 +21,22 @@ frequency on hospital by previous data and some features.
 3. Simple RNN (LSTM)
 
 ## Training
+**Environment settings**
+1. create environment
+    - create environment python=3.6
+    - pip install -r requiremetns.txt
+
 **Data preparation**
-1. All features saved on a csv file 
+2. All features saved on a csv file 
     - Ex: ID, feature_a, feature_b.....label_a, label_b
 
 **Config root**
-2. Go to ```utils/configurations.py``` 
+3. Go to ```utils/configurations.py``` 
     - Fill root + meta_csv will be your meta_csv path
     - save_to will be your trained model destination
 
 **Model training**
-3. call train.py, some args maybe used:
+4. call train.py, some args maybe used:
     - --exp :your experiment name
     - --net :network (rnn, dnn, xgb)
     - --lr :learning rate
