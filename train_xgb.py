@@ -74,7 +74,7 @@ if __name__ == '__main__':
                                max_depth=5, alpha=10, n_estimators=10)
     for img, label, id in progressbar(train_dataloader):
         img = np.array(img.squeeze(1))
-        label = label[:,0]
+        label = label[:, 0]
 
         xg_reg.fit(img, label)
     for img, label, id in progressbar(eval_dataloader):
@@ -82,6 +82,22 @@ if __name__ == '__main__':
         preds = xg_reg.predict(img)
     ratio = preds / label[:, 0]
     all = sum([1 for x in ratio if 0.9 <= float(x) <= 1.1])
-    print('acc:', all/len(preds))
+    print('freq acc: ', all/len(preds))
     rmse = np.sqrt(mean_squared_error(label[:,0], preds))
-    print(rmse)
+    print('freq mse loss: ', rmse)
+
+    xg_reg = xgb.XGBRegressor(objective='reg:linear', colsample_bytree=0.3, learning_rate=0.1,
+                               max_depth=5, alpha=10, n_estimators=10)
+    for img, label, id in progressbar(train_dataloader):
+        img = np.array(img.squeeze(1))
+        label = label[:, 1]
+
+        xg_reg.fit(img, label)
+    for img, label, id in progressbar(eval_dataloader):
+        img = np.array(img.squeeze(1))
+        preds = xg_reg.predict(img)
+    ratio = preds / label[:, 1]
+    all = sum([1 for x in ratio if 0.9 <= float(x) <= 1.1])
+    print('money acc: ', all/len(preds))
+    rmse = np.sqrt(mean_squared_error(label[:,0], preds))
+    print('money mse loss: ', rmse)

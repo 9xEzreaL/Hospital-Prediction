@@ -24,7 +24,7 @@ def parse(args=None):
     parser.add_argument('--epochs', dest='epochs', type=int, default=100, help='# of epochs')
     parser.add_argument('--bs_per_gpu', dest='batch_size_per_gpu', type=int, default=20)  # training batch size
     parser.add_argument('--lr', dest='lr', type=float, default=0.02, help='learning rate')
-    parser.add_argument('--net', dest='net', default='rnn')
+    parser.add_argument('--net', dest='net', default='dnn')
     parser.add_argument('--multi_gpu', dest='multi_gpu', action='store_true')
     parser.add_argument('--exp', dest='experiment_name',
                         default=datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"))
@@ -63,7 +63,6 @@ class Classifier:
 
         loss_freq = nn.MSELoss()(pred[:, 0], label[:, 0])
         loss_money = nn.MSELoss()(pred[:, 1], label[:, 1])
-        # loss_freq = nn.MSELoss()(pred[:, 0], label[:, 1])
 
         loss = loss_freq.mean() + loss_money.mean()
 
@@ -174,8 +173,8 @@ if __name__ == '__main__':
 
             errD, acc = classifier.train_model(img, label, metric_tr)
             it += 1
-            # progressbar.say(epoch=epoch, freq_loss=errD['freq_loss'], money_loss=errD['money_loss'], acc=acc.detach().numpy())
-            progressbar.say(epoch=epoch, freq_loss=errD['freq_loss'], acc=acc.detach().numpy())
+            progressbar.say(epoch=epoch, freq_loss=errD['freq_loss'], money_loss=errD['money_loss'], acc=acc.detach().numpy())
+            # progressbar.say(epoch=epoch, freq_loss=errD['freq_loss'], acc=acc.detach().numpy())
 
         classifier.eval()
         for img, label, id in progressbar(eval_dataloader):
@@ -193,9 +192,3 @@ if __name__ == '__main__':
         classifier.save(os.path.join(
             save_to, args.experiment_name, 'checkpoint', 'weights.{:d}.pth'.format(epoch)
         ))
-
-# training code
-# CUDA_VISIBLE_DEVICES=3 python main.py --net densenet121 --experiment_name first
-# 　CUDA_VISIBLE_DEVICES=3 python main.py --net my_densenet121 --experiment_name my_densenet --bs_per_gpu 40
-# fine tune code
-# CUDA_VISIBLE_DEVICES=3 python main_first.py --net meta_densenet --experiment_name meta_densenet_sam_optim_512_1028_1030 --lr 0.0005 --ckpt meta_densenet_sam_optim_512_1028/checkpoint/weights.29.pth --gpu --batch_size 15

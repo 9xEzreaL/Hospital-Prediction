@@ -37,20 +37,18 @@ class VanillaDataset(Dataset):
 
         feature_list = [self.meta_info.iloc[index][i] for i in self.features]
         features = torch.Tensor(feature_list).unsqueeze(0)
-        feature_list[-1] = math.log(55 + int(self.meta_info.iloc[index]['appl_dot_sum']))
-        # freq_last = math.log(self.meta_info.iloc[index]['freq'])
-        # spend_last = math.log(55 + int(self.meta_info.iloc[index]['appl_dot_sum']))
-        # spend_last = math.log(1+int(self.meta_info.iloc[index]['appl_dot_sum']))
+        if int(self.meta_info.iloc[index]['appl_dot_sum']) > 0:
+            feature_list[-1] = math.log(int(self.meta_info.iloc[index]['appl_dot_sum']))
+        else:
+            tmp_sum = 1
+            feature_list[-1] = math.log(tmp_sum)
 
-
-        # features = torch.Tensor([freq_last, spend_last]).unsqueeze(0)
-        # features = torch.Tensor([spend_last]).unsqueeze(0)
-
-        # label_freq = math.log(self.meta_info.iloc[index]['freq_16'])
-        label_freq = self.meta_info.iloc[index]['freq']
-        label_money = math.log(55+int(self.meta_info.iloc[index]['spend_16']))
-        # label_money = self.meta_info.iloc[index]['spend_16']
-
+        label_freq = self.meta_info.iloc[index][self.objective[0]]
+        if int(self.meta_info.iloc[index][self.objective[1]]) > 0:
+            label_money = math.log(int(self.meta_info.iloc[index][self.objective[1]]))
+        else:
+            label_money = 1
+            label_money = math.log(label_money)
 
         label = torch.Tensor([label_freq, label_money])
 
