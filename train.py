@@ -40,7 +40,7 @@ class Classifier:
         self.multi_gpu = args.multi_gpu if 'multi_gpu' in args else False
         self.model = self.network_map(net)(len(args.features))
         self.model.train()
-        self.model.cuda()
+        # self.model.cuda()
 
         if self.multi_gpu:
             self.model = nn.DataParallel(self.model)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     with open(join(save_to, args.experiment_name, 'setting.txt'), 'w') as f:
         f.write(json.dumps(vars(args), indent=4, separators=(',', ':')))
 
-    num_gpu = torch.cuda.device_count()
+    # num_gpu = torch.cuda.device_count()
 
     classifier = Classifier(args, net=args.net)
     progressbar = Progressbar()
@@ -143,11 +143,11 @@ if __name__ == '__main__':
     from data.dataloader import VanillaDataset
 
     train_dataset = VanillaDataset(root, meta_csv, mode='train', features=args.features)
-    train_dataloader = data.DataLoader(dataset=train_dataset, batch_size=args.batch_size_per_gpu * num_gpu,
+    train_dataloader = data.DataLoader(dataset=train_dataset, batch_size=args.batch_size_per_gpu,# * num_gpu,
                                        num_workers=10, drop_last=True, shuffle=True)
 
     eval_dataset = VanillaDataset(root, meta_csv, mode='eval', features=args.features)
-    eval_dataloader = data.DataLoader(dataset=eval_dataset, batch_size=args.batch_size_per_gpu * num_gpu,
+    eval_dataloader = data.DataLoader(dataset=eval_dataset, batch_size=args.batch_size_per_gpu,# * num_gpu,
                                       num_workers=10, drop_last=True, shuffle=False)
 
     print('Training images:', len(train_dataset))
@@ -163,8 +163,8 @@ if __name__ == '__main__':
         metric_tr = Metric(num_classes=len(args.classes))
         metric_ev = Metric(num_classes=len(args.classes))
         for img, label, id in progressbar(train_dataloader):
-            img = img.cuda()
-            label = label.cuda()
+            # img = img.cuda()
+            # label = label.cuda()
 
             label = label.type(torch.float)
             img = img.type(torch.float)
@@ -176,15 +176,15 @@ if __name__ == '__main__':
 
         classifier.eval()
         for img, label, id in progressbar(eval_dataloader):
-            img = img.cuda()
-            label = label.cuda()
+            # img = img.cuda()
+            # label = label.cuda()
 
             img = img.type(torch.float)
             label = label.type(torch.float)
 
             acc = classifier.eval_model(img, label, metric_ev)
             it += 1
-            progressbar.say(epoch=epoch, acc=acc.detach().numpy())
+            progressbar.say(epoch=epoch, acc=acc)#.detach().numpy()
 
 
         classifier.save(os.path.join(

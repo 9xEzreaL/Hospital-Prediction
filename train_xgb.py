@@ -47,7 +47,7 @@ if __name__ == '__main__':
     with open(join(save_to, args.experiment_name, 'setting.txt'), 'w') as f:
         f.write(json.dumps(vars(args), indent=4, separators=(',', ':')))
 
-    num_gpu = torch.cuda.device_count()
+    # num_gpu = torch.cuda.device_count()
     progressbar = Progressbar()
 
     from data.dataloader import VanillaDataset
